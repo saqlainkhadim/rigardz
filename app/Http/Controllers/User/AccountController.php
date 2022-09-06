@@ -113,7 +113,7 @@ class AccountController extends Controller
             return redirect()->route('user.change.password');
         }
     }
-    function update_account_image(Request $request){
+    function upload_image_to_edit_account(Request $request){
         $validator = Validator::make($request->all(), [
             'edit_image' => 'required|mimes:jpeg,png,jpg,gif,svg|max:'.env("SIZE_LIMIT").'',
         ]);
@@ -126,14 +126,11 @@ class AccountController extends Controller
         $path = public_path() .$profile_picture ;
         file_put_contents($path, base64_decode($file_data));
 //        base64_decode($file_data)->move(public_path('profile_images'), $profile_picture);
-        User::where('user_id', auth()->user()->user_id)->update([
-            'profile_image' => $profile_picture
-        ]);
         return response()->json(['status' => true, 'image_url' => '/'.$profile_picture]);
 
     }
 
-    function upload_image_to_edit_account(Request $request){
+    function update_account_image(Request $request){
         $validator = Validator::make($request->all(), [
             'edit_image' => 'required|mimes:jpeg,png,jpg,gif,svg|max:'.env("SIZE_LIMIT").'',
         ]);
@@ -146,7 +143,11 @@ class AccountController extends Controller
         $profile_picture = 'editable_images/' . 'IMG-' . uniqid() . '-' . time() . '.' . $request->edit_image->extension();
         $request->edit_image->move(public_path('editable_images'), $profile_picture);
         self::remove_old_images(public_path('editable_images'));
-        return response()->json(['status' => true, 'image_url' => 'http://rigardz.com/'.$profile_picture]);
+        return response()->json(['status' => true, 'image_url' => 'https://rigardz.com/'.$profile_picture]);
+        User::where('user_id', auth()->user()->user_id)->update([
+            'profile_image' => $profile_picture
+        ]);
+
 //        return response()->json(['status' => true, 'image_url' => 'https://scaleflex.airstore.io/demo/stephen-walker-unsplash.jpg']);
     }
 
