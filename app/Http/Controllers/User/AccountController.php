@@ -121,14 +121,14 @@ class AccountController extends Controller
         @list($type, $file_data) = explode(';', $base64_image);
         @list(, $file_data) = explode(',', $file_data);
         $extension = explode('/', mime_content_type($base64_image))[1];
-        $profile_picture = 'profile_images\\' . 'IMG-' . uniqid() . '-' . time() . '.' . $extension;
+        $profile_picture = 'profile_images/' . 'IMG-' . uniqid() . '-' . time() . '.' . $extension;
 
-        $path = public_path() .'\\'.$profile_picture ;
-        file_put_contents($path, base64_decode($file_data));
+        $path = public_path() .'/'.$profile_picture ;
+        $upload= file_put_contents($path, base64_decode($file_data));
         User::where('user_id', auth()->user()->user_id)->update([
             'profile_image' => str_replace("\\","/",$profile_picture)
         ]);
-        return response()->json(['status' => true, 'image_url' => '/'.$profile_picture]);
+        return response()->json(['status' => $upload, 'image_url' => '/'.str_replace("\\","/",$profile_picture)]);
 
     }
 
