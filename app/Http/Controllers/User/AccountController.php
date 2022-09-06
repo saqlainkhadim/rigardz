@@ -146,10 +146,10 @@ class AccountController extends Controller
         User::where('user_id', auth()->user()->user_id)->update([
             'profile_image' => $profile_picture
         ]);
-        return response()->json(['status' => true, 'image_url' => 'https://rigardz.com/'.$profile_picture]);
+//        return response()->json(['status' => true, 'image_url' => 'https://rigardz.com/'.$profile_picture]);
 
 
-//        return response()->json(['status' => true, 'image_url' => 'https://scaleflex.airstore.io/demo/stephen-walker-unsplash.jpg']);
+        return response()->json(['status' => true, 'image_url' => 'https://scaleflex.airstore.io/demo/stephen-walker-unsplash.jpg']);
     }
 
     /*This function will delete all images form the given directory which are older than 1 day*/
