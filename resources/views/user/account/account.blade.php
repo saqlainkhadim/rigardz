@@ -25,7 +25,7 @@
                         <div class="card">
                             <div class="card-body p-4 text-center">
                                 <span class="avatar avatar-xl mb-3 avatar-rounded"
-                                    style="background-image: url({{ $account_details->profile_image == '' ? asset('profile.png') : $account_details->profile_image }})"></span>
+                                    style="background-image: url({{ $account_details->profile_image == '' ? asset('profile.png') :"/" .$account_details->profile_image }})"></span>
                                 <h3 class="m-0 mb-1">{{ $account_details->name }}</h3>
                                 <div class="text-muted">
                                     {{ $account_details->email == '' ? __('Not Available') : $account_details->email }}
