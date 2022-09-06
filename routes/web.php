@@ -266,8 +266,8 @@ Route::group(['middleware' => 'Installer'], function () {
         Route::post('update-account', [userAccount::class, 'updateAccount'])->name('update.account');
         Route::get('change-password', [userAccount::class, 'changePassword'])->name('change.password');
         Route::post('update-password', [userAccount::class, 'updatePassword'])->name('update.password');
-        Route::post('upload-image-to-edit-account', [userAccount::class, 'update_account_image'])->name('upload_image_to_edit_account');
-        Route::post('update-account-image', [userAccount::class, 'upload_image_to_edit_account'])->name('update_account_image');
+        Route::post('upload-image-to-edit-account', [userAccount::class, 'upload_image_to_edit_account'])->name('upload_image_to_edit_account');
+        Route::post('update-account-image', [userAccount::class, 'update_account_image'])->name('update_account_image');
 
     });
 
