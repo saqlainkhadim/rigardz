@@ -72,12 +72,12 @@ class AccountController extends Controller
                 return back()->with('toast_error', $validator->messages()->all()[0])->withInput();
             }
 
-            $profile_picture = 'profile_images/' . 'IMG-' . uniqid() . '-' . time() . '.' . $request->profile_picture->extension();
-            $request->profile_picture->move(public_path('profile_images'), $profile_picture);
-
-            User::where('user_id', auth()->user()->user_id)->update([
-                'profile_image' => $profile_picture
-            ]);
+//            $profile_picture = 'profile_images/' . 'IMG-' . uniqid() . '-' . time() . '.' . $request->profile_picture->extension();
+//            $request->profile_picture->move(public_path('profile_images'), $profile_picture);
+//
+//            User::where('user_id', auth()->user()->user_id)->update([
+//                'profile_image' => $profile_picture
+//            ]);
 
             return redirect()->route('user.edit.account')->with('success', 'Profile Image Updated Successfully!');
         }
@@ -113,4 +113,63 @@ class AccountController extends Controller
             return redirect()->route('user.change.password');
         }
     }
+    function update_account_image(Request $request){
+        $validator = Validator::make($request->all(), [
+            'edit_image' => 'required|mimes:jpeg,png,jpg,gif,svg|max:'.env("SIZE_LIMIT").'',
+        ]);
+        $base64_image = $request->input('edit_image'); // your base64 encoded
+        @list($type, $file_data) = explode(';', $base64_image);
+        @list(, $file_data) = explode(',', $file_data);
+        $extension = explode('/', mime_content_type($base64_image))[1];
+        $profile_picture = '\profile_images\\' . 'IMG-' . uniqid() . '-' . time() . '.' . $extension;
+
+        $path = public_path() .$profile_picture ;
+        file_put_contents($path, base64_decode($file_data));
+//        base64_decode($file_data)->move(public_path('profile_images'), $profile_picture);
+        User::where('user_id', auth()->user()->user_id)->update([
+            'profile_image' => $profile_picture
+        ]);
+        return response()->json(['status' => true, 'image_url' => '/'.$profile_picture]);
+
+    }
+
+    function upload_image_to_edit_account(Request $request){
+        $validator = Validator::make($request->all(), [
+            'edit_image' => 'required|mimes:jpeg,png,jpg,gif,svg|max:'.env("SIZE_LIMIT").'',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['status' => false]);
+        }
+
+
+        $profile_picture = 'editable_images/' . 'IMG-' . uniqid() . '-' . time() . '.' . $request->edit_image->extension();
+        $request->edit_image->move(public_path('editable_images'), $profile_picture);
+        self::remove_old_images(public_path('editable_images'));
+        return response()->json(['status' => true, 'image_url' => 'http://rigardz.com/'.$profile_picture]);
+//        return response()->json(['status' => true, 'image_url' => 'https://scaleflex.airstore.io/demo/stephen-walker-unsplash.jpg']);
+    }
+
+    /*This function will delete all images form the given directory which are older than 1 day*/
+    function remove_old_images($dir)
+    {
+        if (is_dir($dir))
+        {
+            $objects = scandir($dir);
+            foreach ($objects as $object)
+            {
+                if ($object != "." && $object != "..")
+                {
+                    if (filetype($dir."/".$object) == "dir") {
+                        rrmdir($dir."/".$object);
+                        rmdir($dir);
+                    }
+                    if (filemtime($dir."/".$object) <= time()-60*60*24) unlink($dir."/".$object);
+
+                }
+            }
+            reset($objects);
+        }
+    }
+
 }

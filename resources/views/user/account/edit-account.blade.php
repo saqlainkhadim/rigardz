@@ -1,6 +1,19 @@
 @extends('layouts.user', ['header' => true, 'nav' => true, 'demo' => true, 'settings' => $settings])
 
 @section('content')
+
+
+
+<div  id="filerobot-edit-image" class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div id="editor_container"></div>
+        </div>
+    </div>
+</div>
+
+
+
 <div class="page-wrapper">
     <div class="container-xl">
         <!-- Page title -->
@@ -30,7 +43,7 @@
                                         <div class="col-md-4 col-xl-4">
                                             <div class="mb-3">
                                                 <div class="form-label required">{{ __('Profile Picture') }} <span class='text-muted'>({{ __('Recommended : 200 x 200 pixels or 500 x 500 pixels') }})</span></div>
-                                                <input type="file" class="form-control" name="profile_picture"
+                                                <input type="file" class="form-control profile_picture" name="profile_picture"
                                                     placeholder="{{ __('Profile Picture') }}..." accept=".jpeg,.jpg,.png,.gif,.svg" />
                                             </div>
                                         </div>
@@ -79,6 +92,169 @@
             </div>
         </div>
     </div>
+    @section('scripts')
+        <script src="https://scaleflex.cloudimg.io/v7/plugins/filerobot-image-editor/latest/filerobot-image-editor.min.js"></script>
+        <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+        <script >
+
+            function filebot(source) {
+                const {TABS, TOOLS} = window.FilerobotImageEditor;
+                const config = {
+                    source: source,
+                    avoidChangesNotSavedAlertOnLeave:false,
+                    showBackButton:true,
+                    defaultSavedImageType:"png",
+                    forceToPngInEllipticalCrop:true,
+                    defaultSavedImageName:"{{auth()->user()->name}}",
+                    closeAfterSave:true,
+                    onSave: (editedImageObject, designState) => {
+
+                        // console.log('saved', editedImageObject, designState);
+                        var formDataA = new FormData();
+                        formDataA.append('_token',"{{ csrf_token() }}");
+                        formDataA.append('edit_image', editedImageObject.imageBase64);
+                        $.ajax({
+                            url: "/user/update-account-image",
+                            data:formDataA,
+                            cache:false,
+                            contentType: false,
+                            processData: false,
+                            type:"POST",
+                            success: function(result){
+                                if(result.status){
+                                    console.log("image updated");
+                                    Swal.fire({
+                                        position: 'top-end',
+                                        icon: 'success',
+                                        title: '',
+                                        html: '<p>Image updated successfully!</p>',
+                                        showConfirmButton: false,
+                                        timer: 1500
+                                    });
+                                }
+                            },
+                            error:function(result){
+                                console.log(result.status)
+                            }
+                        });
+                        $('#filerobot-edit-image').modal('hide');
+
+                    },
+
+
+
+                    annotationsCommon: {
+                        fill: '#ff0000',
+                    },
+                    Text: {text: 'Filerobot...'},
+                    Rotate: {angle: 90, componentType: 'slider'},
+                    translations: {
+                        profile: 'Profile',
+                        coverPhoto: 'Cover photo',
+                        facebook: 'Facebook',
+                        socialMedia: 'Social Media',
+                        fbProfileSize: '180x180px',
+                        fbCoverPhotoSize: '820x312px',
+                    },
+                    Crop: {
+                        presetsItems: [
+                            {
+                                titleKey: 'classicTv',
+                                descriptionKey: '4:3',
+                                ratio: 4 / 3,
+            // icon: CropClassicTv, // optional, CropClassicTv is a React Function component. Possible (React Function component, string or HTML Element)
+                            },
+                            {
+                                titleKey: 'cinemascope',
+                                descriptionKey: '21:9',
+                                ratio: 21 / 9,
+            // icon: CropCinemaScope, // optional, CropCinemaScope is a React Function component.  Possible (React Function component, string or HTML Element)
+                            },
+                        ],
+                        presetsFolders: [
+                            {
+                                titleKey: 'socialMedia', // will be translated into Social Media as backend contains this translation key
+            // icon: Social, // optional, Social is a React Function component. Possible (React Function component, string or HTML Element)
+                                groups: [
+                                    {
+                                        titleKey: 'facebook',
+                                        items: [
+                                            {
+                                                titleKey: 'profile',
+                                                width: 180,
+                                                height: 180,
+                                                descriptionKey: 'fbProfileSize',
+                                            },
+                                            {
+                                                titleKey: 'coverPhoto',
+                                                width: 820,
+                                                height: 312,
+                                                descriptionKey: 'fbCoverPhotoSize',
+                                            },
+                                        ],
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                    tabsIds: [TABS.ADJUST, TABS.ANNOTATE, TABS.WATERMARK, TABS.FILTERS, TABS.FINETUNE, TABS.RESIZE], // or ['Adjust', 'Annotate', 'Watermark']
+                    defaultTabId: TABS.ADJUST,
+                    defaultToolId: TOOLS.CROP,
+                };
+
+                // Assuming we have a div with id="editor_container"
+                const filerobotImageEditor = new FilerobotImageEditor(
+                    document.querySelector('#editor_container'),
+                    config,
+                );
+
+                filerobotImageEditor.render({
+                    onClose: (closingReason) => {
+                        console.log('Closing reason', closingReason);
+                        filerobotImageEditor.terminate();
+                        $('.profile_picture').val('');
+                        $('#filerobot-edit-image').modal('hide');
+                    },
+                });
+
+            }
+
+            $(document).ready(function(){
+
+                $('.profile_picture').on("change", function(){
+                    var formData = new FormData();
+                    formData.append('_token',"{{ csrf_token() }}");
+                    formData.append('edit_image', $('.profile_picture')[0].files[0]);
+                    $.ajax({
+                        url: "/user/upload-image-to-edit-account",
+                        data:formData,
+                        cache:false,
+                        contentType: false,
+                        processData: false,
+                        type:"POST",
+                        success: function(result){
+                            console.log(result);
+                           if(result.status){
+                               // source='https://scaleflex.airstore.io/demo/stephen-walker-unsplash.jpg';
+                               source=result.image_url;
+
+                               filebot(source);
+                               $('#filerobot-edit-image').modal({backdrop: 'static', keyboard: false})
+                               $('#filerobot-edit-image').modal('show');
+                           }
+                        },
+                        error:function(result){
+                            console.log(result.status)
+                        }
+                    });
+                });
+
+            });
+
+
+        </script>
+    @endsection
     @include('user.includes.footer')
 </div>
 @endsection
