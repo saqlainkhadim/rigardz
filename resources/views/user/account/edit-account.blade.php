@@ -242,6 +242,15 @@
                                filebot(source);
                                $('#filerobot-edit-image').modal({backdrop: 'static', keyboard: false})
                                $('#filerobot-edit-image').modal('show');
+                           }else{
+                               Swal.fire({
+                                   position: 'top-end',
+                                   icon: 'error',
+                                   title: '',
+                                   html: result.validator,
+                                   showConfirmButton: false,
+                                   timer: 2000,
+                               });
                            }
                         },
                         error:function(result){

@@ -133,14 +133,16 @@ class AccountController extends Controller
     }
 
     function upload_image_to_edit_account(Request $request){
-        $validator = Validator::make($request->all(), [
+        $validator = Validator::make($request->all(), array(
             'edit_image' => 'required|mimes:jpeg,png,jpg,gif,svg|max:'.env("SIZE_LIMIT").'',
-        ]);
-
+        ), array(
+            'edit_image.required'         => 'Image is required',
+            'edit_image.max'         => 'Image Size should be greater than '.env("SIZE_LIMIT")." Btyes",
+        ));
         if ($validator->fails()) {
-            return response()->json(['status' => false]);
+            $errors=implode(", ",$validator->errors()->all());
+            return response()->json(['status' => false,"message"=>"validation Error","validator"=>$errors]);
         }
-
 
         $profile_picture = 'editable_images/' . 'IMG-' . uniqid() . '-' . time() . '.' . $request->edit_image->extension();
         $request->edit_image->move(public_path('editable_images'), $profile_picture);
