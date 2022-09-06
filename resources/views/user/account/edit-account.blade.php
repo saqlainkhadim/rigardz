@@ -130,7 +130,7 @@
                                         title: '',
                                         html: '<p>Image updated successfully!</p>',
                                         showConfirmButton: false,
-                                        timer: 1500
+                                        timer: 1500,
                                     });
                                 }
                             },
